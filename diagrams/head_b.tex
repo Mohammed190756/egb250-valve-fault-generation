@@ -1,0 +1,17 @@
+\input{pre}
+\definecolor{red}{HTML}{B3261E}
+\tikzset{vv/.style={circle,draw=org,line width=0.9pt,fill=orgl,minimum size=1.25cm,font=\scriptsize,inner sep=0pt},
+ vg/.style={circle,draw=black!70,line width=0.9pt,fill=black!25,minimum size=1.25cm,font=\scriptsize,inner sep=0pt},
+ acc/.style={fill=red,draw=black,line width=0.4pt,minimum size=3mm,inner sep=0pt}}
+\begin{document}\begin{tikzpicture}[x=1cm,y=1cm]
+\node[ttl] at (-2.6,2.9) {(b) Cylinder head, top view};
+\draw[line width=1pt,fill=grp,rounded corners=14pt] (-2.0,-2.6) rectangle (2.0,2.3);
+\node[vv] (ivb) at (-0.85,1.35) {1S\_IVb}; \node[vg] (iva) at (0.85,1.35) {1S\_IVa};
+\node[vv] (dv1) at (0,0) {1S\_DV};
+\node[vv] (dv2) at (-0.85,-1.45) {2S\_DV}; \node[vv] (iv2) at (0.85,-1.45) {2S\_IV};
+\draw[dashed,acc!80,line width=0.6pt,draw=acc] (-1.75,-0.75) rectangle (1.75,2.1); \node[lab,anchor=west,text=acc] at (2.15,1.7) {first-stage valves};
+\draw[dashed,line width=0.6pt,draw=org] (-1.75,-2.35) rectangle (1.75,-0.85); \node[lab,anchor=west,text=org] at (2.15,-1.6) {second-stage valves};
+\node[acc] (a1) at (-1.6,1.35) {}; \draw[line width=0.5pt] (a1.west)--(-2.3,1.35) node[font=\footnotesize\bfseries,text=red,anchor=east]{A1};
+\node[acc] (a2) at (-1.38,-1.2) {}; \draw[line width=0.5pt] (a2.west)--(-2.3,-1.2) node[font=\footnotesize\bfseries,text=red,anchor=east]{A2};
+\node[lab,align=left,anchor=north west] at (-2.6,-2.85) {A1: vertical, first-stage intake side\\A2: vertical, on the head of 2S\_DV\\Arrangement schematic, not to scale};
+\end{tikzpicture}\end{document}

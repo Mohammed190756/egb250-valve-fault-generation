@@ -1,0 +1,23 @@
+\documentclass[10pt,border=4pt]{standalone}
+\usepackage{mathptmx}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{tikz}
+\usetikzlibrary{patterns,decorations.pathmorphing,decorations.pathreplacing,arrows.meta,fit,backgrounds,calc,positioning,shapes.geometric}
+\definecolor{acc}{HTML}{0B5394}
+\definecolor{accl}{HTML}{EAF0F7}
+\definecolor{grp}{HTML}{F5F5F5}
+\definecolor{org}{HTML}{C55A11}
+\definecolor{orgl}{HTML}{FBEFE6}
+\tikzset{
+ dat/.style={draw=black,line width=0.6pt,fill=white,align=center,font=\small,inner sep=3pt,minimum height=0.85cm},
+ lay/.style={draw=acc,line width=0.8pt,fill=accl,rounded corners=2pt,align=center,font=\small,inner sep=3pt,minimum height=0.85cm},
+ cnd/.style={draw=org,line width=0.8pt,fill=orgl,rounded corners=2pt,align=center,font=\small,inner sep=3pt,minimum height=0.75cm},
+ op/.style={circle,draw=black,line width=0.6pt,fill=white,inner sep=0.5pt,font=\small,minimum size=5mm},
+ grpb/.style={draw=black!45,dashed,line width=0.6pt,rounded corners=3pt,inner sep=6pt},
+ arr/.style={-{Latex[length=2.2mm,width=1.7mm]},line width=0.7pt},
+ carr/.style={-{Latex[length=2.2mm,width=1.7mm]},line width=0.7pt,draw=org},
+ shp/.style={font=\scriptsize,text=black!70,inner sep=1pt},
+ lab/.style={font=\footnotesize,inner sep=1pt},
+ ttl/.style={font=\small\bfseries,inner sep=0pt,anchor=west}
+}
+\newcommand{\xh}{\mathbf{x}_h}\newcommand{\xf}{\mathbf{x}_f}

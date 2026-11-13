@@ -1,0 +1,32 @@
+\input{pre}
+\tikzset{vlv/.style={draw=org,line width=0.8pt,fill=orgl,minimum width=1.25cm,minimum height=0.6cm,font=\footnotesize,inner sep=1pt},
+ vlh/.style={draw=black!60,line width=0.8pt,fill=grp,minimum width=1.25cm,minimum height=0.6cm,font=\footnotesize,inner sep=1pt},
+ cyl/.style={draw=acc,line width=0.8pt,fill=accl,align=center,font=\small,minimum height=1.2cm,minimum width=2.0cm},
+ flow/.style={-{Latex[length=2.2mm,width=1.7mm]},line width=1pt,draw=acc}}
+\begin{document}\begin{tikzpicture}[x=1cm,y=1cm]
+% ---------------- (c) plate valve
+\begin{scope}[shift={(0,0)}]
+\node[ttl] at (-0.6,5.0) {(c) Plate valve: closed and open};
+\foreach \dx/\op/\tt in {0/0/closed, 5.3/1/open}{
+ \begin{scope}[shift={(\dx,0)}]
+ % seat with two ports
+ \fill[pattern=north east lines,pattern color=black!55] (0,0) rectangle (0.7,0.8) (1.3,0) rectangle (2.7,0.8) (3.3,0) rectangle (4.0,0.8);
+ \draw[line width=0.8pt] (0,0) rectangle (0.7,0.8) (1.3,0) rectangle (2.7,0.8) (3.3,0) rectangle (4.0,0.8);
+ \node[lab] at (2.0,-0.3) {seat};
+ % guard
+ \fill[pattern=north west lines,pattern color=acc!70] (0.3,2.4) rectangle (3.7,2.85);
+ \draw[line width=0.8pt,draw=acc] (0.3,2.4) rectangle (3.7,2.85); \node[lab] at (2.0,3.1) {guard};
+ % plate
+ \pgfmathsetmacro{\py}{0.8+\op*1.15}
+ \draw[line width=0.8pt,fill=org] (0.4,\py) rectangle (3.6,\py+0.12);
+ % springs
+ \foreach \sx in {1.0,3.0}{\draw[line width=0.6pt,decorate,decoration={zigzag,segment length=1.6mm,amplitude=1.3mm}] (\sx,\py+0.12)--(\sx,2.4);}
+ \node[lab,anchor=west] at (3.75,\py+0.06) {plate}; \ifnum\op=0 \node[lab,anchor=west] at (3.05,{(\py+2.5)/2}) {spring};\fi
+ \node[lab,anchor=north] at (2.0,-0.65) {\tt};
+ \ifnum\op=1
+   \draw[flow,draw=acc] (1.0,-0.55)--(1.0,1.2) to[out=90,in=0] (0.15,1.55); \draw[flow,draw=acc] (3.0,-0.55)--(3.0,1.2) to[out=90,in=180] (3.85,1.55);
+ \fi
+ \end{scope}}
+\node[lab,align=left,anchor=west] at (-0.6,-1.45) {$p_d$ above the plate, $p_u$ below it; the valve opens when $p_uA_u-p_dA_d>F_{sc}+F_{adh}$, Eq.~(4.3)};
+\end{scope}
+\end{tikzpicture}\end{document}

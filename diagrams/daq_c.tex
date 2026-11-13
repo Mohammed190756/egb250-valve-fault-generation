@@ -1,0 +1,15 @@
+\input{pre}
+\tikzset{bx/.style={dat,minimum height=1.1cm,text width=2.9cm,align=center,font=\small}}
+\begin{document}\raggedright\begin{tikzpicture}[x=1cm,y=1cm]
+\node[ttl] at (-1.6,1.45) {(c) Acquisition and recordings};
+\node[bx,text width=2.6cm] (s) at (0,0) {\textbf{Sensors}\\[-1pt]\scriptsize A1, A2: 51.2 kS/s\\[-2pt]Pr1--Pr4: 25 kS/s\\[-2pt]E1: 500 kS/s};
+\node[bx] (d) at (3.6,0) {\textbf{Data acquisition}\\[-1pt]\scriptsize about 10 s per recording (about 126 revolutions)};
+\node[bx] (r) at (7.4,0) {\textbf{17 conditions}\\[-1pt]\scriptsize P1 healthy, P2--P17 single faults; 15 recordings each (R1--R15)};
+\node[bx] (p) at (11.2,0) {\textbf{Three days}\\[-1pt]\scriptsize healthy 12 Sep; faults 14 and 18 Sep 2018};
+\draw[arr] (s)--(d); \draw[arr] (d)--(r); \draw[arr] (r)--(p);
+\node[lay,text width=2.6cm,minimum height=0.8cm] (tr) at (3.6,-2.0) {Training\\[-1pt]\scriptsize R1--R8};
+\node[lay,text width=2.6cm,minimum height=0.8cm] (va) at (7.4,-2.0) {Validation\\[-1pt]\scriptsize R9--R10};
+\node[lay,text width=2.6cm,minimum height=0.8cm] (te) at (11.2,-2.0) {Test\\[-1pt]\scriptsize R11--R15};
+\draw[arr] (r.south)--++(0,-0.45)-|(tr.north); \draw[arr] (r.south)--(va.north); \draw[arr] (r.south)--++(0,-0.45)-|(te.north);
+\node[lab,anchor=east,align=right] at (2.1,-2.0) {split by recording,\\same for every condition};
+\end{tikzpicture}\end{document}

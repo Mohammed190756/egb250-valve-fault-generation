@@ -1,0 +1,61 @@
+"""Conditional diffusion translator (Ho et al., 2020): eps_theta(x_t, t, x_h, c) on the fault map x_0 = x_f,
+conditioned on a healthy revolution x_h and the condition c = (valve, mode); classifier-free guidance (Ho and Salimans, 2022)
+by dropping c with probability 0.1; DDIM sampling (Song et al., 2021) with 50 steps."""
+import sys, math, numpy as np, torch, torch.nn as nn, torch.nn.functional as F; sys.path.insert(0, '..')
+from gcommon import *
+C = 64; T = 1000
+BETA = torch.linspace(1e-4, 0.02, T); ALPHA = 1 - BETA; ABAR = torch.cumprod(ALPHA, 0)
+def temb(t, d=64):
+    h = d // 2; f = torch.exp(-math.log(10000) * torch.arange(h) / h); a = t.float()[:, None] * f[None]; return torch.cat([a.sin(), a.cos()], -1)
+class Net(nn.Module):
+    def __init__(s):
+        super().__init__(); s.emb = CondEmb(64); s.null = nn.Parameter(torch.zeros(64)); s.tm = nn.Sequential(nn.Linear(64, 128), nn.SiLU(), nn.Linear(128, 64))
+        s.stem = CircConv(64, C, 7); s.b = nn.ModuleList([Block(C, d, 64) for d in (1, 2, 4, 8, 1, 2)]); s.out = CircConv(C, 32, 7)
+    def forward(s, xt, t, xh, v, m, drop=None):
+        e = s.emb(v, m)
+        if drop is not None: e = torch.where(drop[:, None], s.null.expand_as(e), e)
+        e = e + s.tm(temb(t)); h = s.stem(torch.cat([xt, xh], 1))
+        for b in s.b: h = b(h, e)
+        return s.out(F.silu(h))
+class Diff(nn.Module):
+    def __init__(s): super().__init__(); s.net = Net()
+    def loss(s, xf, xh, v, m):
+        t = torch.randint(0, T, (len(xf),)); eps = torch.randn_like(xf); ab = ABAR[t][:, None, None]
+        xt = ab.sqrt() * xf + (1 - ab).sqrt() * eps; drop = torch.rand(len(xf)) < 0.1
+        return ((eps - s.net(xt, t, xh, v, m, drop)) ** 2).mean()
+    @torch.no_grad()
+    def generate(s, xh, v, m, steps=50, w=1.0, seed=0, eta=0.0):
+        g = torch.Generator().manual_seed(seed); x = torch.randn(xh.shape, generator=g); ts = torch.linspace(T - 1, 0, steps).long()
+        for i, t in enumerate(ts):
+            tt = torch.full((len(x),), int(t)); ab = ABAR[t]; abp = ABAR[ts[i + 1]] if i + 1 < steps else torch.tensor(1.0)
+            ec = s.net(x, tt, xh, v, m); eu = s.net(x, tt, xh, v, m, torch.ones(len(x), dtype=torch.bool)) if w != 1.0 else ec
+            eps = eu + w * (ec - eu); x0 = (x - (1 - ab).sqrt() * eps) / ab.sqrt()
+            sig = eta * ((1 - abp) / (1 - ab) * (1 - ab / abp)).sqrt()          # Song et al. (2021) Eq. 16; eta = 0 gives deterministic DDIM
+            x = abp.sqrt() * x0 + (1 - abp - sig ** 2).clamp(min=0).sqrt() * eps + (sig * torch.randn(x.shape, generator=g) if eta > 0 else 0)
+        return x
+def train(name='diff', exclude=(), epochs=60, patience=8, bs=128, lr=1e-3, seed=0):
+    torch.manual_seed(seed); rng = np.random.default_rng(seed)
+    H, Fx, v, m, _ = arrays('train', exclude); Hv, Fv, vv, mv, _ = arrays('val', exclude)
+    H, Fx, Hv, Fv = map(torch.tensor, (H, Fx, Hv, Fv)); v, m, vv, mv = map(lambda a: torch.tensor(a, dtype=torch.long), (v, m, vv, mv))
+    net = Diff(); opt = torch.optim.AdamW(net.parameters(), lr=lr, weight_decay=1e-4); sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, epochs)
+    L = Logger(name); best = 1e18; bad = 0
+    OBJ = dict(net=net, opt=opt, sched=sched); ep0, best, bad = ck_load(name, OBJ, L, rng)
+    for ep in range(ep0, epochs):
+        net.train(); tl = nb = 0
+        for b in batches(len(Fx), bs, rng):
+            xh = H[rng.integers(0, len(H), len(b))]; loss = net.loss(Fx[b], xh, v[b], m[b])
+            opt.zero_grad(); loss.backward(); nn.utils.clip_grad_norm_(net.parameters(), 1.0); opt.step(); tl += loss.item(); nb += 1
+        sched.step(); net.eval()
+        with torch.no_grad():                                                   # fixed-noise validation loss
+            _st = torch.get_rng_state(); torch.manual_seed(123); vl = nb2 = 0
+            for j in range(0, len(Fv), 512):
+                xh = Hv[torch.randint(0, len(Hv), (len(Fv[j:j + 512]),))]; vl += net.loss(Fv[j:j + 512], xh, vv[j:j + 512], mv[j:j + 512]).item(); nb2 += 1
+        torch.set_rng_state(_st)                                                  # validation noise must not reset the training noise stream
+        L.log(epoch=ep, train_eps_mse=tl / nb, val_eps_mse=vl / nb2)
+        if vl / nb2 < best - 1e-4: best = vl / nb2; bad = 0; torch.save(net.state_dict(), f'../runs/{name}.pt')
+        else:
+            bad += 1
+            if bad >= patience and ep >= 15: break
+        ck_save(name, OBJ, L, rng, ep, best, bad)
+if __name__ == '__main__':
+    train()

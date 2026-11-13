@@ -1,0 +1,4 @@
+{"title": "egb250-valve-fault-generation: crank-angle model and generative translation of healthy compressor vibration into specified valve faults",
+ "upload_type": "software", "license": "MIT",
+ "creators": [{"name": "Ghulammohiuddin, Mohammed Juneduddin"}, {"name": "Deshmukh, Ashish"}],
+ "keywords": ["reciprocating compressor", "valve faults", "generative models", "vibration"]}
